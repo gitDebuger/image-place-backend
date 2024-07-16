@@ -33,9 +33,13 @@ public class UserService {
     }
 
     public boolean matchPasswords(String username, String password) {
+        var user = userRepository.findUserEntityByUsername(username);
+        if (user == null) {
+            return false;
+        }
         return passwordEncoder.matches(
                 password,
-                userRepository.findUserEntityByUsername(username).getPassword()
+                user.getPassword()
         );
     }
 
