@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -32,18 +34,37 @@ public class UserService {
         return userRepository.existsById(username);
     }
 
-    public boolean matchPasswords(String username, String password) {
-        var user = userRepository.findUserEntityByUsername(username);
-        if (user == null) {
-            return false;
+    public boolean notMatchPasswords(String username, String password) {
+        var existsPassword = userRepository.findPasswordByUsername(username);
+        if (existsPassword == null) {
+            return true;
         }
-        return passwordEncoder.matches(
-                password,
-                user.getPassword()
-        );
+        return !passwordEncoder.matches(password, existsPassword);
     }
 
     public byte[] getUserAvatar(String username) {
-        return userRepository.findUserEntityByUsername(username).getHeadPortrait();
+        return userRepository.findAvatarByUsername(username);
+    }
+
+    public Map<String, String> getUserInfoByUsername(String username) {
+        var info = userRepository.findUserInfoByUsername(username);
+        var res = new HashMap<String, String>();
+        res.put("username", info.getUsername());
+        res.put("email", info.getEmail());
+        res.put("nickname", info.getNickname());
+        res.put("resume", info.getResume());
+        return res;
+    }
+
+    public void updatePersonalInfo(String username, String email, String nickname, String resume) {
+        userRepository.updateUserInfo(username, nickname, email, resume);
+    }
+
+    public void updatePassword(String username, String newPassword) {
+        userRepository.updatePassword(username, passwordEncoder.encode(newPassword));
+    }
+
+    public void updateAvatar(String username, byte[] avatar) {
+        userRepository.updateAvatar(username, avatar);
     }
 }

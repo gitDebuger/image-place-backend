@@ -42,7 +42,7 @@ public class AdminController {
     public ResponseEntity<Map<String, String>> getAdminUsernameByToken(@RequestBody Map<String, String> request) {
         var token = request.get("token");
         if (!tokenProvider.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Invalid Token"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
         }
         var username = tokenProvider.getUsernameFromToken(token);
         return ResponseEntity.ok(Collections.singletonMap("username", username));

@@ -42,7 +42,7 @@ public class UserController {
     public ResponseEntity<Map<String, String>> loginUser(@RequestBody Map<String, String> request) {
         var username = request.get("username");
         var password = request.get("password");
-        if (username == null || !userService.matchPasswords(username, password)) {
+        if (username == null || userService.notMatchPasswords(username, password)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "用户名或密码无效"));
         }
         var token = tokenProvider.generateToken(username);
@@ -53,9 +53,50 @@ public class UserController {
     public ResponseEntity<Map<String, String>> getAvatar(@RequestBody Map<String, String> request) {
         var token = request.get("token");
         if (!tokenProvider.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Invalid Token"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
         }
         var username = tokenProvider.getUsernameFromToken(token);
         return ResponseEntity.ok(Collections.singletonMap("url", "/files/avatar/" + username));
+    }
+
+    @PostMapping("/get-personal-info")
+    public ResponseEntity<Map<String, String>> getPersonalInfo(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
+        }
+        var username = tokenProvider.getUsernameFromToken(token);
+        var info = userService.getUserInfoByUsername(username);
+        return ResponseEntity.ok(info);
+    }
+
+    @PostMapping("/update-personal-info")
+    public ResponseEntity<Map<String, String>> updatePersonalInfo(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
+        }
+        var username = tokenProvider.getUsernameFromToken(token);
+        var email = request.get("email");
+        var nickname = request.get("nickname");
+        var resume = request.get("resume");
+        userService.updatePersonalInfo(username, email, nickname, resume);
+        return ResponseEntity.ok(Collections.singletonMap("message", "信息更新成功"));
+    }
+
+    @PostMapping("/update-password")
+    public ResponseEntity<Map<String, String>> updatePassword(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
+        }
+        var username = tokenProvider.getUsernameFromToken(token);
+        var currentPassword = request.get("current_password");
+        var newPassword = request.get("new_password");
+        if (userService.notMatchPasswords(username, currentPassword)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "当前密码不正确"));
+        }
+        userService.updatePassword(username, newPassword);
+        return ResponseEntity.ok(Collections.singletonMap("message", "密码更新成功，请重新登录"));
     }
 }

@@ -9,10 +9,6 @@ public class AdminService {
     @Autowired
     private AdminRepository adminRepository;
     public String getEmailByUsername(String username) {
-        var admin = adminRepository.findAdminEntityByUsername(username);
-        if (admin == null) {
-            return null;
-        }
-        return admin.getEmail();
+        return adminRepository.findEmailByUsername(username);
     }
 }
