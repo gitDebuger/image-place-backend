@@ -1,9 +1,13 @@
 package com.imageplc.imageplace.service;
 
+import com.imageplc.imageplace.dto.ImageBaseInfoDTO;
+import com.imageplc.imageplace.dto.ImageInfoDTO;
 import com.imageplc.imageplace.entity.ImageEntity;
 import com.imageplc.imageplace.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ImageService {
@@ -16,5 +20,21 @@ public class ImageService {
 
     public void markImageAsDeleted(String uuid) {
         imageRepository.markAsDeletedByUUID(uuid);
+    }
+
+    public ImageBaseInfoDTO getImage(String uuid) {
+        return imageRepository.findImageContentByUUID(uuid);
+    }
+
+    public List<ImageInfoDTO> getImages(String username) {
+        return imageRepository.findImageByUsername(username);
+    }
+
+    public String getTitleByUUID(String uuid) {
+        return imageRepository.findTitleByUUID(uuid);
+    }
+
+    public void updateImageInfo(String uuid, String title, String status) {
+        imageRepository.updateImageInfo(uuid, title, status);
     }
 }

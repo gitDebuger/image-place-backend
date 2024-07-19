@@ -1,6 +1,7 @@
 package com.imageplc.imageplace.controller;
 
 import com.imageplc.imageplace.components.JwtTokenProvider;
+import com.imageplc.imageplace.dto.ImageInfoDTO;
 import com.imageplc.imageplace.service.ImageService;
 import com.imageplc.imageplace.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -91,5 +93,56 @@ public class ImageController {
         }
         imageService.markImageAsDeleted(uuid);
         return ResponseEntity.ok(Collections.singletonMap("message", "删除成功"));
+    }
+
+    @GetMapping("/image/{uuid}")
+    public void getImage(@PathVariable String uuid, HttpServletResponse response) {
+        var image = imageService.getImage(uuid);
+        try {
+            if (image == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            } else {
+                response.setContentType(image.getType());
+                response.setContentLength(image.getContent().length);
+                response.getOutputStream().write(image.getContent());
+                response.getOutputStream().close();
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @PostMapping("/image/get-user-all-pictures")
+    public ResponseEntity<List<ImageInfoDTO>> getUserAllPictures(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonList(null));
+        }
+        var username = tokenProvider.getUsernameFromToken(token);
+        var images = imageService.getImages(username);
+        return ResponseEntity.ok(images);
+    }
+
+    @PostMapping("/image/get-picture-title")
+    public ResponseEntity<Map<String, String>> getPictureTitle(@RequestBody Map<String, String> request) {
+        var uuid = request.get("uuid");
+        var title = imageService.getTitleByUUID(uuid);
+        if (uuid == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "UUID无效"));
+        }
+        return ResponseEntity.ok(Collections.singletonMap("title", title));
+    }
+
+    @PostMapping("/image/update-image-info")
+    public ResponseEntity<Map<String, String>> updateImageInfo(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
+        }
+        var uuid = request.get("uuid");
+        var status = request.get("status");
+        var title = request.get("title");
+        imageService.updateImageInfo(uuid, title, status);
+        return ResponseEntity.ok(Collections.singletonMap("message", "更新成功"));
     }
 }
