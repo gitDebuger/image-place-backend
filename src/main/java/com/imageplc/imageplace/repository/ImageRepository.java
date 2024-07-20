@@ -32,4 +32,7 @@ public interface ImageRepository extends JpaRepository<ImageEntity, String> {
     @Modifying
     @Query("UPDATE ImageEntity image SET image.title = :title, image.status = :status WHERE image.uuid = :uuid")
     void updateImageInfo(@Param("uuid") String uuid, @Param("title") String title, @Param("status") String status);
+
+    @Query("SELECT image.username FROM ImageEntity image WHERE image.uuid = :imageUUID")
+    String findUsernameByUUID(@Param("imageUUID") String imageUUID);
 }

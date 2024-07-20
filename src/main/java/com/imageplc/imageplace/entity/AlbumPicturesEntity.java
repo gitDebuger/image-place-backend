@@ -1,9 +1,6 @@
 package com.imageplc.imageplace.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 @Getter
@@ -12,14 +9,14 @@ import lombok.Getter;
 public class AlbumPicturesEntity {
     @Id
     @Column(name = "id", columnDefinition = "INT")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "album_id", columnDefinition = "INT")
     private int albumId;
     @Column(name = "picture_uuid", columnDefinition = "CHAR(36)")
     private String pictureUUID;
 
-    public AlbumPicturesEntity(int id, int albumId, String pictureUUID) {
-        this.id = id;
+    public AlbumPicturesEntity(int albumId, String pictureUUID) {
         this.albumId = albumId;
         this.pictureUUID = pictureUUID;
     }
