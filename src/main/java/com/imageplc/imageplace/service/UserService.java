@@ -67,4 +67,8 @@ public class UserService {
     public void updateAvatar(String username, byte[] avatar) {
         userRepository.updateAvatar(username, avatar);
     }
+
+    public String getEmailByUsername(String username) {
+        return userRepository.findEmailByUsername(username);
+    }
 }

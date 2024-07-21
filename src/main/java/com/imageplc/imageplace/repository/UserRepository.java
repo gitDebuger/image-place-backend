@@ -20,6 +20,9 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
     @Query("SELECT new com.imageplc.imageplace.dto.UserInfoDTO(user.username, user.email, user.nickname, user.resume) FROM UserEntity user WHERE user.username = :username")
     UserInfoDTO findUserInfoByUsername(@Param("username") String username);
 
+    @Query("SELECT user.email FROM UserEntity user WHERE user.username = :username")
+    String findEmailByUsername(@Param("username") String username);
+
     @Transactional
     @Modifying
     @Query("UPDATE UserEntity user SET user.email = :email, user.nickname = :nickname, user.resume = :resume WHERE user.username = :username")

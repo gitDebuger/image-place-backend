@@ -31,7 +31,7 @@ public class AdminController {
         if (email == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("error", "用户名无效"));
         }
-        if (!verificationService.verifyCode(email, verification_code)) {
+        if (verificationService.notMatchVerifyCode(email, verification_code)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "验证码错误"));
         }
         var token = tokenProvider.generateToken(username);

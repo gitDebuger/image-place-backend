@@ -1,6 +1,7 @@
 package com.imageplc.imageplace.controller;
 
 import com.imageplc.imageplace.components.JwtTokenProvider;
+import com.imageplc.imageplace.service.EmailService;
 import com.imageplc.imageplace.service.UserService;
 import com.imageplc.imageplace.service.VerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private VerificationService verificationService;
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody Map<String, String> request) {
@@ -29,7 +32,7 @@ public class UserController {
         var password = request.get("password");
         var email = request.get("email");
         var verificationCode = request.get("verification_code");
-        if (!verificationService.verifyCode(email, verificationCode)) {
+        if (verificationService.notMatchVerifyCode(email, verificationCode)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "验证码无效"));
         } else if (userService.userExists(username)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "用户名已存在"));
@@ -98,5 +101,32 @@ public class UserController {
         }
         userService.updatePassword(username, newPassword);
         return ResponseEntity.ok(Collections.singletonMap("message", "密码更新成功，请重新登录"));
+    }
+
+    @PostMapping("/send-find-back-vr-code")
+    public ResponseEntity<Map<String, String>> sendFindBackVRCode(@RequestBody Map<String, String> request) {
+        var username = request.get("username");
+        var email = userService.getEmailByUsername(username);
+        if (email == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "用户名不存在"));
+        }
+        emailService.sendFindBackPasswordVerificationCode(email);
+        return ResponseEntity.ok(Collections.singletonMap("message", "验证码已发送到" + email + "中，请查收"));
+    }
+
+    @PostMapping("/find-back-password")
+    public ResponseEntity<Map<String, String>> findBackPassword(@RequestBody Map<String, String> request) {
+        var username = request.get("username");
+        var password = request.get("password");
+        var vrCode = request.get("vr_code");
+        var email = userService.getEmailByUsername(username);
+        if (email == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "用户名不存在"));
+        }
+        if (verificationService.notMatchVerifyCode(email, vrCode)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", "验证码不匹配"));
+        }
+        userService.updatePassword(username, password);
+        return ResponseEntity.ok(Collections.singletonMap("message", "密码更新成功"));
     }
 }

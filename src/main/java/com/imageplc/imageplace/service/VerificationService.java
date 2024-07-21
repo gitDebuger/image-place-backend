@@ -11,9 +11,9 @@ public class VerificationService {
     @Autowired
     private VerificationCodeRepository verificationCodeRepository;
 
-    public boolean verifyCode(String email, String code) {
+    public boolean notMatchVerifyCode(String email, String code) {
         var thresholdTime = LocalDateTime.now().minusMinutes(5);
         var entity = verificationCodeRepository.findValidCode(email, code, thresholdTime);
-        return entity != null;
+        return entity == null;
     }
 }

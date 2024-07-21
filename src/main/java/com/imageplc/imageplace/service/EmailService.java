@@ -16,6 +16,8 @@ public class EmailService {
     private JavaMailSender mailSender;
     @Autowired
     private VerificationCodeRepository verificationCodeRepository;
+    public final String messageFrom = "2218723143@qq.com";
+    public final String messageSubject = "【PLC图床】验证码";
 
     public void sendVerificationCode(String toEmail) {
         var code = generateVerificationCode();
@@ -29,6 +31,12 @@ public class EmailService {
         sendLoginEmail(toEmail, code);
     }
 
+    public void sendFindBackPasswordVerificationCode(String toEmail) {
+        var code = generateVerificationCode();
+        saveVerificationCode(toEmail, code);
+        sendFindBackPasswordEmail(toEmail, code);
+    }
+
     private String generateVerificationCode() {
         return String.format("%06d", random.nextInt(1000000));
     }
@@ -39,19 +47,28 @@ public class EmailService {
 
     private void sendRegisterEmail(String toEmail, String code) {
         var message = new SimpleMailMessage();
-        message.setFrom("2218723143@qq.com");
+        message.setFrom(messageFrom);
         message.setTo(toEmail);
-        message.setSubject("Verification Code");
+        message.setSubject(messageSubject);
         message.setText("【PLC图床】验证码：" + code + "（5分钟内有效）。您正在注册PLC图床，请勿将验证码告诉他人哦。");
         mailSender.send(message);
     }
 
     private void sendLoginEmail(String toEmail, String code) {
         var message = new SimpleMailMessage();
-        message.setFrom("2218723143@qq.com");
+        message.setFrom(messageFrom);
         message.setTo(toEmail);
-        message.setSubject("Verification Code");
+        message.setSubject(messageSubject);
         message.setText("【PLC图床】验证码：" + code + "（5分钟内有效）。您正在以管理员身份登录PLC图床，请勿将验证码告诉他人哦。");
+        mailSender.send(message);
+    }
+
+    private void sendFindBackPasswordEmail(String toEmail, String code) {
+        var message = new SimpleMailMessage();
+        message.setFrom(messageFrom);
+        message.setTo(toEmail);
+        message.setSubject(messageSubject);
+        message.setText("【PLC图床】验证码：" + code + "（5分钟内有效）。您正在找回密码，请勿将验证码告诉他人哦。");
         mailSender.send(message);
     }
 }
