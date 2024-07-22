@@ -2,6 +2,7 @@ package com.imageplc.imageplace.repository;
 
 import com.imageplc.imageplace.dto.ImageBaseInfoDTO;
 import com.imageplc.imageplace.dto.ImageInfoDTO;
+import com.imageplc.imageplace.dto.PictureInfoDTO;
 import com.imageplc.imageplace.entity.ImageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -35,4 +36,7 @@ public interface ImageRepository extends JpaRepository<ImageEntity, String> {
 
     @Query("SELECT image.username FROM ImageEntity image WHERE image.uuid = :imageUUID")
     String findUsernameByUUID(@Param("imageUUID") String imageUUID);
+
+    @Query("SELECT new com.imageplc.imageplace.dto.PictureInfoDTO(image.uuid, image.username, image.title, image.type, image.status) FROM ImageEntity image")
+    List<PictureInfoDTO> findAllPictures();
 }

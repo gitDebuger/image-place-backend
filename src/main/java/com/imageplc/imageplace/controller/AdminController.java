@@ -1,8 +1,10 @@
 package com.imageplc.imageplace.controller;
 
 import com.imageplc.imageplace.components.JwtTokenProvider;
+import com.imageplc.imageplace.dto.PictureInfoDTO;
 import com.imageplc.imageplace.dto.UserInfoDTO;
 import com.imageplc.imageplace.service.AdminService;
+import com.imageplc.imageplace.service.ImageService;
 import com.imageplc.imageplace.service.UserService;
 import com.imageplc.imageplace.service.VerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,8 @@ public class AdminController {
     private VerificationService verificationService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ImageService imageService;
 
     @PostMapping("/admin-login")
     public ResponseEntity<Map<String, String>> adminLogin(@RequestBody Map<String, String> request) {
@@ -113,5 +117,36 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonList(null));
         }
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @PostMapping("/admin-fetch-all-pictures")
+    public ResponseEntity<List<PictureInfoDTO>> adminFetchAllPictures(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonList(null));
+        }
+        var admin = tokenProvider.getUsernameFromToken(token);
+        if (!adminService.validateAdmin(admin)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonList(null));
+        }
+        return ResponseEntity.ok(imageService.getAllPictures());
+    }
+
+    @PostMapping("/admin-update-picture-info")
+    public ResponseEntity<Map<String, String>> adminUpdatePictureInfo(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
+        }
+        var admin = tokenProvider.getUsernameFromToken(token);
+        if (!adminService.validateAdmin(admin)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "无权限操作"));
+        }
+        var uuid = request.get("uuid");
+        var status = request.get("status");
+        var title = request.get("title");
+        imageService.updateImageInfo(uuid, title, status);
+        System.out.println(uuid);
+        return ResponseEntity.ok(Collections.singletonMap("message", "信息更新成功"));
     }
 }

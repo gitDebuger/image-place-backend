@@ -2,6 +2,7 @@ package com.imageplc.imageplace.service;
 
 import com.imageplc.imageplace.dto.ImageBaseInfoDTO;
 import com.imageplc.imageplace.dto.ImageInfoDTO;
+import com.imageplc.imageplace.dto.PictureInfoDTO;
 import com.imageplc.imageplace.entity.ImageEntity;
 import com.imageplc.imageplace.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,5 +37,9 @@ public class ImageService {
 
     public void updateImageInfo(String uuid, String title, String status) {
         imageRepository.updateImageInfo(uuid, title, status);
+    }
+
+    public List<PictureInfoDTO> getAllPictures() {
+        return imageRepository.findAllPictures();
     }
 }
