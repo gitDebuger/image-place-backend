@@ -11,4 +11,8 @@ public class AdminService {
     public String getEmailByUsername(String username) {
         return adminRepository.findEmailByUsername(username);
     }
+
+    public boolean validateAdmin(String username) {
+        return adminRepository.existsById(username);
+    }
 }

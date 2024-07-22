@@ -1,7 +1,9 @@
 package com.imageplc.imageplace.controller;
 
 import com.imageplc.imageplace.components.JwtTokenProvider;
+import com.imageplc.imageplace.dto.UserInfoDTO;
 import com.imageplc.imageplace.service.AdminService;
+import com.imageplc.imageplace.service.UserService;
 import com.imageplc.imageplace.service.VerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,6 +25,8 @@ public class AdminController {
     private AdminService adminService;
     @Autowired
     private VerificationService verificationService;
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/admin-login")
     public ResponseEntity<Map<String, String>> adminLogin(@RequestBody Map<String, String> request) {
@@ -46,5 +51,67 @@ public class AdminController {
         }
         var username = tokenProvider.getUsernameFromToken(token);
         return ResponseEntity.ok(Collections.singletonMap("username", username));
+    }
+
+    @PostMapping("/admin-change-user-info")
+    public ResponseEntity<Map<String, String>> adminChangeUserInfo(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
+        }
+        var admin = tokenProvider.getUsernameFromToken(token);
+        if (!adminService.validateAdmin(admin)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "无权限操作"));
+        }
+        var username = request.get("username");
+        var nickname = request.get("nickname");
+        var email = request.get("email");
+        var resume = request.get("resume");
+        userService.updatePersonalInfo(username, email, nickname, resume);
+        return ResponseEntity.ok(Collections.singletonMap("message", "修改成功"));
+    }
+
+    @PostMapping("/admin-change-user-password")
+    public ResponseEntity<Map<String, String>> adminChangeUserPassword(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
+        }
+        var admin = tokenProvider.getUsernameFromToken(token);
+        if (!adminService.validateAdmin(admin)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "无权限操作"));
+        }
+        var username = request.get("username");
+        var password = request.get("password");
+        userService.updatePassword(username, password);
+        return ResponseEntity.ok(Collections.singletonMap("message", "密码更新成功"));
+    }
+
+    @PostMapping("/admin-delete-user")
+    public ResponseEntity<Map<String, String>> adminDeleteUser(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Token无效"));
+        }
+        var admin = tokenProvider.getUsernameFromToken(token);
+        if (!adminService.validateAdmin(admin)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "无权限操作"));
+        }
+        var username = request.get("username");
+        userService.deleteUser(username);
+        return ResponseEntity.ok(Collections.singletonMap("message", "删除用户成功"));
+    }
+
+    @PostMapping("/admin-fetch-all-users")
+    public ResponseEntity<List<UserInfoDTO>> adminFetchAllUsers(@RequestBody Map<String, String> request) {
+        var token = request.get("token");
+        if (!tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonList(null));
+        }
+        var admin = tokenProvider.getUsernameFromToken(token);
+        if (!adminService.validateAdmin(admin)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonList(null));
+        }
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 }

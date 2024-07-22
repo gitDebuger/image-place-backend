@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
     @Query("SELECT user.password FROM UserEntity user WHERE user.username = :username")
@@ -37,4 +39,7 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
     @Modifying
     @Query("UPDATE UserEntity user SET user.headPortrait = :avatar WHERE user.username = :username")
     void updateAvatar(@Param("username") String username, @Param("avatar") byte[] avatar);
+
+    @Query("SELECT new com.imageplc.imageplace.dto.UserInfoDTO(user.username, user.email, user.nickname, user.resume) FROM UserEntity user")
+    List<UserInfoDTO> findAllUsers();
 }

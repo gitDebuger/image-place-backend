@@ -1,5 +1,6 @@
 package com.imageplc.imageplace.service;
 
+import com.imageplc.imageplace.dto.UserInfoDTO;
 import com.imageplc.imageplace.entity.UserEntity;
 import com.imageplc.imageplace.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -70,5 +72,12 @@ public class UserService {
 
     public String getEmailByUsername(String username) {
         return userRepository.findEmailByUsername(username);
+    }
+
+    public void deleteUser(String username) {
+        userRepository.deleteById(username);
+    }
+    public List<UserInfoDTO> getAllUsers() {
+        return userRepository.findAllUsers();
     }
 }
