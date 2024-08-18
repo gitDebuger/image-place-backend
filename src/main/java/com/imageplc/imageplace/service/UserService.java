@@ -4,6 +4,7 @@ import com.imageplc.imageplace.dto.UserInfoDTO;
 import com.imageplc.imageplace.entity.UserEntity;
 import com.imageplc.imageplace.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +21,13 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Value("${spring.data.default-avatar-url}")
+    private String defaultAvatarPath;
 
     public void registerUser(String username, String password, String email) {
         var user = new UserEntity(username, passwordEncoder.encode(password), email);
         try {
-            var defaultAvatar = Files.readAllBytes(Path.of("src/main/resources/static/default-avatar.jpg"));
+            var defaultAvatar = Files.readAllBytes(Path.of(defaultAvatarPath));
             user.setHeadPortrait(defaultAvatar);
         } catch (IOException e) {
             System.out.println(e.getMessage());
